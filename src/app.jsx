@@ -43,16 +43,23 @@ class MovieList extends React.Component {
         const movies = this.props.movies.map((movie) => {
             const liked = Boolean(
                 this.props.liked.find((liked) => liked.pk === movie.pk));
-            const onClick = () => this.props.onMovieLiked(movie);
+            const onClick = () => {
+                if (! liked) {
+                    this.props.onMovieLiked(movie);
+                } else {
+                    this.props.onMovieUnliked(movie);
+                }
+            }
+
             const likes = (<Avatar>{movie.likes}</Avatar>);
 
             return (<ListItem
-                key={movie.pk}
-                onClick={onClick}
-                primaryText={movie.title}
-                leftIcon={liked && <ActionFavorite /> || <ActionFavoriteBorder/>}
-                rightAvatar={likes}
-            />)})
+                        key={movie.pk}
+                        onClick={onClick}
+                        primaryText={movie.title}
+                        leftIcon={liked && <ActionFavorite /> || <ActionFavoriteBorder/>}
+                        rightAvatar={likes}
+                    />)})
 
         return (
             <List>
@@ -69,7 +76,13 @@ class UserList extends React.Component {
         const users = this.props.users.map((user) => {
             const followed = Boolean(
                 this.props.followed.find((followed) => followed.pk === user.pk));
-            const onClick = () => this.props.onUserFollowed(user);
+            const onClick = () => {
+                if (! followed) {
+                    this.props.onUserFollowed(user);
+                } else {
+                    this.props.onUserUnfollowed(user);
+                }
+            }
 
             return (<ListItem
                         key={user.pk}
@@ -108,12 +121,14 @@ class UserView extends React.Component {
                         liked={this.props.user.liked_movies}
                         movies={this.props.movies}
                         onMovieLiked={this.props.onMovieLiked}
+                        onMovieUnliked={this.props.onMovieUnliked}
                     />
                 </Tab>
                 <Tab label="User list">
                     <UserList
                         followed={this.props.user.followed_users}
                         onUserFollowed={this.props.onUserFollowed}
+                        onUserUnfollowed={this.props.onUserUnfollowed}
                         users={this.props.users}
                     />
                 </Tab>
@@ -123,6 +138,7 @@ class UserView extends React.Component {
                         liked={this.props.user.liked_movies}
                         movies={recommendedMovies}
                         onMovieLiked={this.props.onMovieLiked}
+                        onMovieUnliked={this.props.onMovieUnliked}
                     />
                 </Tab>
             </Tabs>
@@ -167,6 +183,12 @@ export default class App extends React.Component {
         }).then((response) => this.reloadUserData())
     }
 
+    onMovieUnliked(movie) {
+        fetch(`${horseURL}users/${this.state.user.pk}/liked_movies/${movie.pk}`, {
+            method: "DELETE",
+        }).then((response) => this.reloadUserData())
+    }
+
     onUserFollowed(followed_user) {
         fetch(`${horseURL}users/${this.state.user.pk}/follow`,{
             method: "POST",
@@ -176,6 +198,12 @@ export default class App extends React.Component {
             },
             body: JSON.stringify({'pk': followed_user.pk})
 
+        }).then((response) => this.reloadUserData())
+    }
+
+    onUserUnfollowed(followed_user) {
+        fetch(`${horseURL}users/${this.state.user.pk}/follow/${followed_user.pk}`, {
+            method: "DELETE",
         }).then((response) => this.reloadUserData())
     }
 
@@ -237,6 +265,8 @@ export default class App extends React.Component {
                         recommendations={this.state.recommendations}
                         onMovieLiked={this.onMovieLiked.bind(this)}
                         onUserFollowed={this.onUserFollowed.bind(this)}
+                        onMovieUnliked={this.onMovieUnliked.bind(this)}
+                        onUserUnfollowed={this.onUserUnfollowed.bind(this)}
                     />
                 </div>
             </MuiThemeProvider>
