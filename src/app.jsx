@@ -61,6 +61,29 @@ class MovieList extends React.Component {
 }
 
 
+class UserList extends React.Component {
+    render () {
+        const users = this.props.users.map((user) => {
+            const followed = Boolean(
+                this.props.followed.find((followed) => followed.pk === user.pk));
+
+            return (<ListItem
+                        key={user.pk}
+                        onClick={() => alert(user.name)}
+                        primaryText={user.name}
+                        leftIcon={followed && <ActionFavorite /> || <ActionFavoriteBorder/>}
+                    />)})
+
+        return (
+            <List>
+                <Subheader>Users</Subheader>
+                {users}
+            </List>
+        )
+    }
+}
+
+
 class UserView extends React.Component {
     state = {
         recommendations: []
@@ -101,6 +124,12 @@ class UserView extends React.Component {
                         header="All Movies"
                         liked={this.props.user.liked_movies}
                         movies={this.props.movies}
+                    />
+                </Tab>
+                <Tab label="User list">
+                    <UserList
+                        followed={this.props.user.followed_users}
+                        users={this.props.users}
                     />
                 </Tab>
                 <Tab label="Recommendations">
@@ -159,6 +188,7 @@ export default class App extends React.Component {
                         onChange={this.onUserSelected.bind(this)}/>
                     <UserView
                         user={this.state.user}
+                        users={this.state.users}
                         movies={this.state.movies}
                     />
                 </div>
