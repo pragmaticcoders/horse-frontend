@@ -87,35 +87,6 @@ class UserList extends React.Component {
 
 
 class UserView extends React.Component {
-    state = {
-        recommendations: []
-    }
-
-    componentDidMount() {
-        this.fetchUserData()
-    }
-
-    componentDidUpdate(prevProps) {
-        if (this.props.user &&
-            (prevProps.user && prevProps.user.pk) != this.props.user.pk) {
-            this.fetchUserData()
-        }
-    }
-
-    fetchUserData(prevProps) {
-        if (!this.props.user) {
-            return
-        }
-
-        fetch(`${horseURL}users/${this.props.user.pk}/recommendations`).then((response) =>
-            response.json()
-        ).then((data) => {
-            this.setState({
-                recommendations: data.items
-            })
-        })
-    }
-
     render () {
         if (!this.props.user) {
             return (<div>Please select user</div>);
@@ -140,7 +111,7 @@ class UserView extends React.Component {
                     <MovieList
                         header="Recommendations"
                         liked={this.props.user.liked_movies}
-                        movies={this.state.recommendations}
+                        movies={this.props.recommendations}
                     />
                 </Tab>
             </Tabs>
@@ -153,7 +124,24 @@ export default class App extends React.Component {
     state = {
         user: null,
         users: [],
-        movies: []
+        movies: [],
+        recommendations: []
+    }
+
+    reloadUserData() {
+        this.loadMovies()
+        this.loadRecommendations()
+        this.loadUser()
+    }
+
+    loadRecommendations() {
+        fetch(`${horseURL}users/${this.state.user.pk}/recommendations`).then(
+            (response) => response.json()
+        ).then((data) => {
+            this.setState({
+                recommendations: data.items
+            })
+        })
     }
 
     onMovieLiked(movie) {
@@ -165,10 +153,7 @@ export default class App extends React.Component {
             },
             body: JSON.stringify({'pk': movie.pk})
 
-        }).then((response) => {
-            this.loadMovies()
-            this.loadUser()
-        })
+        }).then((response) => this.reloadUserData())
     }
 
     loadMovies() {
@@ -201,12 +186,16 @@ export default class App extends React.Component {
         })
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.user &&
+                this.state.user.pk != (prevState.user && prevState.user.pk)) {
+            this.reloadUserData()
+        }
+    }
+
     onUserSelected(event, index, value) {
         const user = this.state.users.find((user) => user.pk === value)
-        this.setState({
-            'user': user
-        })
-        this.loadMovies()
+        this.setState({'user': user})
     }
 
     render() {
@@ -222,6 +211,7 @@ export default class App extends React.Component {
                         user={this.state.user}
                         users={this.state.users}
                         movies={this.state.movies}
+                        recommendations={this.state.recommendations}
                         onMovieLiked={this.onMovieLiked.bind(this)}
                     />
                 </div>
