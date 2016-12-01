@@ -52,9 +52,60 @@ class MovieList extends React.Component {
 
         return (
             <List>
-                <Subheader>All Movies</Subheader>
+                <Subheader>{this.props.header}</Subheader>
                 {movies}
             </List>
+        )
+    }
+}
+
+
+class UserView extends React.Component {
+    state = {
+        recommendations: []
+    }
+
+    componentDidMount() {
+        this.fetchUserData()
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.user && prevProps.user.pk != this.props.user.pk) {
+            this.fetchUserData()
+        }
+    }
+
+    fetchUserData(prevProps) {
+        if (!this.props.user) {
+            return
+        }
+
+        fetch(`${horseURL}users/${this.props.user.pk}/recommendations`).then((response) =>
+            response.json()
+        ).then((data) => {
+            this.setState({
+                recommendations: data.items
+            })
+        })
+    }
+
+    render () {
+        if (!this.props.user) {
+            return (<div>Please select user</div>);
+        }
+        return (
+            <div>
+                <MovieList
+                    header="All Movies"
+                    liked={this.props.user.liked_movies}
+                    movies={this.props.movies}
+                />
+                <MovieList
+                    header="Recommendations"
+                    liked={this.props.user.liked_movies}
+                    movies={this.state.recommendations}
+                />
+            </div>
         )
     }
 }
@@ -64,7 +115,7 @@ export default class App extends React.Component {
     state = {
         user: null,
         users: [],
-        movies: [],
+        movies: []
     }
 
     componentDidMount() {
@@ -93,15 +144,6 @@ export default class App extends React.Component {
     }
 
     render() {
-        let userContent = (<div>Please select user</div>);
-        if (this.state.user) {
-            userContent = (
-                <MovieList
-                    liked={this.state.user.liked_movies}
-                    movies={this.state.movies}
-                />)
-        }
-
         return (
             <MuiThemeProvider>
                 <div>
@@ -110,7 +152,10 @@ export default class App extends React.Component {
                         user={this.state.user}
                         users={this.state.users}
                         onChange={this.onUserSelected.bind(this)}/>
-                    {userContent}
+                    <UserView
+                        user={this.state.user}
+                        movies={this.state.movies}
+                    />
                 </div>
             </MuiThemeProvider>
         )
