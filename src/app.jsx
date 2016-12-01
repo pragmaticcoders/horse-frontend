@@ -13,6 +13,7 @@ import Subheader from 'material-ui/Subheader';
 import ActionFavorite from 'material-ui/svg-icons/action/favorite';
 import ActionFavoriteBorder from 'material-ui/svg-icons/action/favorite-border';
 import Avatar from 'material-ui/Avatar';
+import {Tabs, Tab} from 'material-ui/Tabs';
 
 
 const horseURL = 'http://localhost:5000/';
@@ -94,18 +95,22 @@ class UserView extends React.Component {
             return (<div>Please select user</div>);
         }
         return (
-            <div>
-                <MovieList
-                    header="All Movies"
-                    liked={this.props.user.liked_movies}
-                    movies={this.props.movies}
-                />
-                <MovieList
-                    header="Recommendations"
-                    liked={this.props.user.liked_movies}
-                    movies={this.state.recommendations}
-                />
-            </div>
+            <Tabs>
+                <Tab label="Movie list" >
+                    <MovieList
+                        header="All Movies"
+                        liked={this.props.user.liked_movies}
+                        movies={this.props.movies}
+                    />
+                </Tab>
+                <Tab label="Recommendations">
+                    <MovieList
+                        header="Recommendations"
+                        liked={this.props.user.liked_movies}
+                        movies={this.state.recommendations}
+                    />
+                </Tab>
+            </Tabs>
         )
     }
 }
