@@ -1,4 +1,3 @@
-
 var webpack = require('webpack');
 var path = require('path');
 var loaders = require('./webpack.loaders');
@@ -34,7 +33,10 @@ module.exports = {
 		filename: '[chunkhash].js'
 	},
 	resolve: {
-		extensions: ['', '.js', '.jsx']
+	    extensions: ['', '.js', '.jsx'],
+            alias: {
+                config: path.join(__dirname, 'config/production.js')
+            }
 	},
 	module: {
 		loaders

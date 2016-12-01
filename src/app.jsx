@@ -14,9 +14,10 @@ import ActionFavorite from 'material-ui/svg-icons/action/favorite';
 import ActionFavoriteBorder from 'material-ui/svg-icons/action/favorite-border';
 import Avatar from 'material-ui/Avatar';
 import {Tabs, Tab} from 'material-ui/Tabs';
+import config from 'config';
 
 
-const horseURL = 'http://localhost:5000/';
+const horseURL = config.horseURL;
 
 
 class UserChooser extends React.Component {
