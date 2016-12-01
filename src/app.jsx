@@ -42,13 +42,15 @@ class MovieList extends React.Component {
         const movies = this.props.movies.map((movie) => {
             const liked = Boolean(
                 this.props.liked.find((liked) => liked.pk === movie.pk));
+            const onClick = () => this.props.onMovieLiked(movie);
+            const likes = (<Avatar>{movie.likes}</Avatar>);
 
             return (<ListItem
                 key={movie.pk}
-                onClick={() => alert(movie.title)}
+                onClick={onClick}
                 primaryText={movie.title}
                 leftIcon={liked && <ActionFavorite /> || <ActionFavoriteBorder/>}
-                rightAvatar={<Avatar>3</Avatar>}
+                rightAvatar={likes}
             />)})
 
         return (
@@ -94,7 +96,8 @@ class UserView extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.user && prevProps.user.pk != this.props.user.pk) {
+        if (this.props.user &&
+            (prevProps.user && prevProps.user.pk) != this.props.user.pk) {
             this.fetchUserData()
         }
     }
@@ -124,6 +127,7 @@ class UserView extends React.Component {
                         header="All Movies"
                         liked={this.props.user.liked_movies}
                         movies={this.props.movies}
+                        onMovieLiked={this.props.onMovieLiked}
                     />
                 </Tab>
                 <Tab label="User list">
@@ -152,15 +156,22 @@ export default class App extends React.Component {
         movies: []
     }
 
-    componentDidMount() {
-        fetch(horseURL + 'users').then((response) =>
-            response.json()
-        ).then((data) => {
-            this.setState({
-                users: data.items
-            })
-        })
+    onMovieLiked(movie) {
+        fetch(`${horseURL}users/${this.state.user.pk}/liked_movies`,{
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({'pk': movie.pk})
 
+        }).then((response) => {
+            this.loadMovies()
+            this.loadUser()
+        })
+    }
+
+    loadMovies() {
         fetch(horseURL + 'movies').then((response) =>
             response.json()
         ).then((data) => {
@@ -170,11 +181,32 @@ export default class App extends React.Component {
         })
     }
 
+    loadUser() {
+        fetch(`${horseURL}users/${this.state.user.pk}`).then((response) =>
+            response.json()
+        ).then((data) => {
+            this.setState({
+                user: data
+            })
+        })
+    }
+
+    componentDidMount() {
+        fetch(horseURL + 'users').then((response) =>
+            response.json()
+        ).then((data) => {
+            this.setState({
+                users: data.items
+            })
+        })
+    }
+
     onUserSelected(event, index, value) {
         const user = this.state.users.find((user) => user.pk === value)
         this.setState({
             'user': user
         })
+        this.loadMovies()
     }
 
     render() {
@@ -190,6 +222,7 @@ export default class App extends React.Component {
                         user={this.state.user}
                         users={this.state.users}
                         movies={this.state.movies}
+                        onMovieLiked={this.onMovieLiked.bind(this)}
                     />
                 </div>
             </MuiThemeProvider>
