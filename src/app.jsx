@@ -69,10 +69,11 @@ class UserList extends React.Component {
         const users = this.props.users.map((user) => {
             const followed = Boolean(
                 this.props.followed.find((followed) => followed.pk === user.pk));
+            const onClick = () => this.props.onUserFollowed(user);
 
             return (<ListItem
                         key={user.pk}
-                        onClick={() => alert(user.name)}
+                        onClick={onClick}
                         primaryText={user.name}
                         leftIcon={followed && <ActionFavorite /> || <ActionFavoriteBorder/>}
                     />)})
@@ -105,6 +106,7 @@ class UserView extends React.Component {
                 <Tab label="User list">
                     <UserList
                         followed={this.props.user.followed_users}
+                        onUserFollowed={this.props.onUserFollowed}
                         users={this.props.users}
                     />
                 </Tab>
@@ -153,6 +155,18 @@ export default class App extends React.Component {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({'pk': movie.pk})
+
+        }).then((response) => this.reloadUserData())
+    }
+
+    onUserFollowed(followed_user) {
+        fetch(`${horseURL}users/${this.state.user.pk}/follow`,{
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({'pk': followed_user.pk})
 
         }).then((response) => this.reloadUserData())
     }
@@ -214,6 +228,7 @@ export default class App extends React.Component {
                         movies={this.state.movies}
                         recommendations={this.state.recommendations}
                         onMovieLiked={this.onMovieLiked.bind(this)}
+                        onUserFollowed={this.onUserFollowed.bind(this)}
                     />
                 </div>
             </MuiThemeProvider>
