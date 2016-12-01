@@ -93,6 +93,13 @@ class UserView extends React.Component {
         if (!this.props.user) {
             return (<div>Please select user</div>);
         }
+        const recommendedMovies = this.props.recommendations.map(
+            (recommendation) => ({
+                pk: recommendation.movie.pk,
+                likes: recommendation.weight.toFixed(2),
+                title: recommendation.movie.title,
+            }))
+
         return (
             <Tabs>
                 <Tab label="Movie list" >
@@ -114,7 +121,8 @@ class UserView extends React.Component {
                     <MovieList
                         header="Recommendations"
                         liked={this.props.user.liked_movies}
-                        movies={this.props.recommendations}
+                        movies={recommendedMovies}
+                        onMovieLiked={this.props.onMovieLiked}
                     />
                 </Tab>
             </Tabs>
